@@ -73,11 +73,11 @@ export const toModel = async (svgString) => {
  */
 export const straighten = (model, facetSize = 1) => {
   let newModel = makerjs.model.clone(model);
+  // console.log(newModel);
   makerjs.model.walk(newModel, {
-    onPath({ route, pathContext, pathId }) {
+    onPath({ pathContext, pathId, modelContext }) {
       if (pathContext.type !== "line") {
-        const lastKey = route.pop();
-        delete makerjs.travel(newModel, route).result[lastKey];
+        delete modelContext.paths[pathId];
         var points = makerjs.path.toKeyPoints(pathContext, facetSize);
         makerjs.model.addModel(
           newModel,
