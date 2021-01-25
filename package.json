@@ -4,17 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "snowpack dev"
+    "test": "c8 node ./test/index.js",
+    "dev": "snowpack dev",
+    "dev:node": "node ./dev.js"
   },
   "keywords": [],
   "author": "dorilama",
   "license": "ISC",
   "devDependencies": {
-    "snowpack": "^3.0.11"
+    "c8": "^7.4.0",
+    "snowpack": "^3.0.11",
+    "zora": "^4.0.2"
   },
   "dependencies": {
+    "element-to-path": "^1.2.0",
     "makerjs": "^0.17.0",
+    "svgpath": "^2.3.0",
+    "svgson": "^4.1.0",
     "uland": "^0.6.1"
-  }
+  },
+  "type": "module"
 }
