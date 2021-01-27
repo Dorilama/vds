@@ -89,3 +89,149 @@ export const straighten = (model, facetSize = 1) => {
   });
   return newModel;
 };
+
+/** @type {["T40GREEN", "T45BLUE", "T90GREY", "TPENGOLD", "TEMBVIOLET"]} */
+const utensileList = [
+  "T40GREEN",
+  "T45BLUE",
+  "T90GREY",
+  "TPENGOLD",
+  "TEMBVIOLET",
+];
+/** @type {["normal", "reverse", "vgroove", "decor", "debossing"]} */
+const cutList = ["normal", "reverse", "vgroove", "decor", "debossing"];
+
+/**
+ * @typedef {typeof utensileList[number]} Utensile
+ * @typedef {typeof cutList[number]} Cut
+ */
+/**
+ * @type {Object<string,Utensile[]>}
+ */
+const valid = {
+  normal: ["T40GREEN", "T45BLUE", "T90GREY"],
+  reverse: ["T40GREEN", "T45BLUE", "T90GREY"],
+  vgroove: ["T40GREEN"],
+  decor: ["TPENGOLD"],
+  debossing: ["TEMBVIOLET"],
+};
+
+export const layer = {
+  sep: ".",
+  NOCUT: "NOCUT",
+  /**
+   * Given sheet ID, cut type and utensile type
+   * return a string representing the layer label
+   * @param {string|number} sheet the sheet ID
+   * @param {Cut} [cut] the cut type
+   * @param {Utensile} [utensile] the utensile type
+   * @returns {string} the layer label
+   */
+  create(sheet, cut, utensile) {
+    if (sheet === this.NOCUT) {
+      return this.NOCUT + this.sep.repeat(2);
+    }
+    const validated = this.validate(cut, utensile);
+    if (!validated) {
+      return null;
+    }
+    const [c, u] = validated;
+    return sheet + this.sep + c + this.sep + u;
+  },
+  /**
+   *
+   * @param {string} cut
+   * @param {string} utensile
+   * @returns {[Cut,Utensile]}
+   */
+  // validate(cut, utensile) {
+  //   let c, u;
+  //   if (!cut) {
+  //     c = cutList[0];
+  //   } else {
+  //     c = cutList.find((v) => v === cut);
+  //     if (!c) {
+  //       return null;
+  //     }
+  //   }
+
+  //   if (!utensile) {
+  //     u = valid[c][0];
+  //   } else {
+  //     u = utensileList.find((v) => v === utensile);
+  //     if (!u) {
+  //       return null;
+  //     }
+  //   }
+  //   if (!valid[c].includes(u)) {
+  //     return null;
+  //   }
+  //   return [c, u];
+  // },
+  validate(cut, utensile) {
+    if (!cut) {
+      if (utensile) {
+        let v = Object.entries(valid).find(([k, v]) =>
+          v.find((s) => s === utensile)
+        );
+        if (v) {
+          cut = v[0];
+        } else {
+          cut = cutList[0];
+        }
+      } else {
+        cut = cutList[0];
+      }
+    }
+    const c = cutList.find((v) => v === cut);
+    if (!c) {
+      return null;
+    }
+    if (!utensile) {
+      utensile = valid[c][0];
+    }
+    const u = utensileList.find((v) => v === utensile);
+    if (!u) {
+      return null;
+    }
+    if (!valid[c].includes(u)) {
+      return null;
+    }
+    return [c, u];
+  },
+  /**
+   * Given a layer label string
+   * return the parsed sheet ID, cut type and utensile type
+   * @param {string} str
+   * @returns {[string, Cut, Utensile]}
+   */
+  parse(str) {
+    const split = str.split(this.sep);
+    if (split.length !== 3) {
+      return null;
+    }
+    const [sheet, cut, utensile] = split;
+    if (sheet === this.NOCUT) {
+      return [sheet, null, null];
+    }
+    const validated = this.validate(cut, utensile);
+    if (!validated) {
+      return null;
+    }
+    return [sheet, ...validated];
+  },
+  /**
+   *
+   * @param {string} str
+   * @param {{sheet?: number|string, cut?: Cut, utensile?: Utensile}} param1
+   */
+  modify(str, { sheet, cut, utensile }) {
+    if (sheet === this.NOCUT) {
+      if (cut || utensile) {
+        return null;
+      }
+      return this.NOCUT + this.sep.repeat(2);
+    }
+    return "null";
+  },
+};
