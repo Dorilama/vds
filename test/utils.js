@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { test } from "zora";
 import { toModel, straighten, layer } from "../src/utils.js";
 import makerjs from "makerjs";
@@ -95,188 +96,122 @@ test("utils", (t) => {
   });
 
   t.test("layer", (t) => {
-    t.test("explicit creation", (t) => {
-      ["normal", "reverse", "vgroove"].forEach((v) => {
-        t.equal(
-          // @ts-ignore
-          layer.create(0, v, "T40GREEN"),
-          `0.${v}.T40GREEN`,
-          `cut ${v} utensile T40GREEN`
-        );
-      });
-      ["normal", "reverse"].forEach((v) => {
-        t.equal(
-          // @ts-ignore
-          layer.create(0, v, "T45BLUE"),
-          `0.${v}.T45BLUE`,
-          `cut ${v} utensile T45BLUE`
-        );
-      });
-      ["normal", "reverse"].forEach((v) => {
-        t.equal(
-          // @ts-ignore
-          layer.create(0, v, "T90GREY"),
-          `0.${v}.T90GREY`,
-          `cut ${v} utensile T90GREY`
-        );
-      });
+    t.test("validate ok", (t) => {
+      t.equal(layer.validate("NOCUT"), ["NOCUT"], "NOCUT");
       t.equal(
-        layer.create(0, "decor", "TPENGOLD"),
-        `0.decor.TPENGOLD`,
-        `cut decor utensile TPENGOLD`
+        layer.validate("NOCUT", "normal", "T40GREEN"),
+        ["NOCUT"],
+        "NOCUT with args"
       );
-      t.equal(
-        layer.create(0, "debossing", "TEMBVIOLET"),
-        `0.debossing.TEMBVIOLET`,
-        `cut debossing utensile TEMBVIOLET`
-      );
-    });
-
-    t.test("implicit creation", (t) => {
-      t.equal(layer.create(layer.NOCUT), "NOCUT..", "nocut");
-      t.equal(layer.create(0), "0.normal.T40GREEN", "default create");
-      t.equal(
-        layer.create(layer.NOCUT, "normal", "T40GREEN"),
-        "NOCUT..",
-        "nocut with values"
-      );
-      t.equal(layer.create(0, "normal"), "0.normal.T40GREEN", "normal");
-      t.equal(layer.create(0, "reverse"), "0.reverse.T40GREEN", "reverse");
-      t.equal(layer.create(0, "decor"), "0.decor.TPENGOLD", "decor");
-      t.equal(
-        layer.create(0, "debossing"),
-        "0.debossing.TEMBVIOLET",
-        "debossing"
-      );
-      t.equal(layer.create(0, "vgroove"), "0.vgroove.T40GREEN", "vgroove");
-      t.equal(layer.create(0, null, "T40GREEN"), "0.normal.T40GREEN");
-      t.equal(layer.create(0, null, "T45BLUE"), "0.normal.T45BLUE");
-      t.equal(layer.create(0, null, "T90GREY"), "0.normal.T90GREY");
-      t.equal(layer.create(0, null, "TPENGOLD"), "0.decor.TPENGOLD");
-      t.equal(layer.create(0, null, "TEMBVIOLET"), "0.debossing.TEMBVIOLET");
-    });
-
-    t.test("wrong creation", (t) => {
-      ["normal", "reverse", "vgroove", "decor"].forEach((v) => {
-        t.equal(
-          // @ts-ignore
-          layer.create(0, v, "TEMBVIOLET"),
-          null,
-          "wrong head TEMBVIOLET with cut " + v
-        );
-      });
-      ["normal", "reverse", "vgroove", "debossing"].forEach((v) => {
-        t.equal(
-          // @ts-ignore
-          layer.create(0, v, "TPENGOLD"),
-          null,
-          "wrong head TPENGOLD with cut " + v
-        );
-      });
-      ["decor", "vgroove", "debossing"].forEach((v) => {
-        t.equal(
-          // @ts-ignore
-          layer.create(0, v, "T45BLUE"),
-          null,
-          "wrong head T45BLUE with cut " + v
-        );
-      });
-      ["decor", "vgroove", "debossing"].forEach((v) => {
-        t.equal(
-          // @ts-ignore
-          layer.create(0, v, "T90GREY"),
-          null,
-          "wrong head T90GREY with cut " + v
-        );
-      });
-      ["decor", "debossing"].forEach((v) => {
-        t.equal(
-          // @ts-ignore
-          layer.create(0, v, "T40GREEN"),
-          null,
-          "wrong head T40GREEN with cut " + v
-        );
+      [
+        ["T40GREEN", ["normal", "reverse", "vgroove"]],
+        ["T45BLUE", ["normal", "reverse"]],
+        ["T90GREY", ["normal", "reverse"]],
+        ["TPENGOLD", ["decor"]],
+        ["TEMBVIOLET", ["debossing"]],
+      ].forEach(([utensile, cuts]) => {
+        cuts.forEach((c) => {
+          t.equal(
+            layer.validate(0, c, utensile),
+            ["0", c, utensile],
+            c + " " + utensile
+          );
+        });
       });
     });
 
+    t.test("validate bad", (t) => {
+      [
+        [null, null, null],
+        [null, "normal", "T90GREY"],
+        [0, null, "T90GREY"],
+        [0, "normal", null],
+        [0, "badcut", "T90GREY"],
+        [0, "normal", "badutensile"],
+      ].forEach(([sheet, cut, utensile]) => {
+        t.equal(
+          layer.validate(sheet, cut, utensile),
+          null,
+          sheet + " " + cut + " " + utensile
+        );
+      });
+      [
+        ["T40GREEN", ["decor", "debossing"]],
+        ["T45BLUE", ["decor", "debossing", "vgroove"]],
+        ["T90GREY", ["decor", "debossing", "vgroove"]],
+        ["TPENGOLD", ["normal", "reverse", "vgroove", "debossing"]],
+        ["TEMBVIOLET", ["normal", "reverse", "vgroove", "decor"]],
+      ].forEach(([utensile, cuts]) => {
+        cuts.forEach((c) => {
+          t.equal(layer.validate(0, c, utensile), null, c + " " + utensile);
+        });
+      });
+      t.equal(
+        layer.validate("hello.world", "normal", "T$)GREEN"),
+        null,
+        "dots in sheet string"
+      );
+      t.equal(
+        layer.validate(1.3, "normal", "T$)GREEN"),
+        null,
+        "floating point numbers as sheet name"
+      );
+    });
+
+    t.test("create", (t) => {
+      t.equal(layer.create("NOCUT"), "NOCUT", "NOCUT");
+      t.equal(
+        layer.create(0, "normal", "T40GREEN"),
+        "0.normal.T40GREEN",
+        "valid create"
+      );
+      t.equal(layer.create(0, "decor", "T40GREEN"), null, "invalid create");
+    });
     t.test("parse", (t) => {
-      t.test("wrong string", (t) => {
-        [
-          "",
-          "invalid label",
-          layer.NOCUT,
-          "0.normal",
-          "0.normal.TEMBVIOLET",
-          "0.reverse.TPENGOLD",
-          "0.reverse.notool",
-          "0.asdf.qwert",
-        ].forEach((s) => {
-          t.equal(layer.parse(s), null, s || "empty string");
-        });
-      });
-
-      t.test("valid string", (t) => {
-        /** @type {[string,any][]} */
-        const samples = [
-          [layer.NOCUT + layer.sep.repeat(2), [layer.NOCUT, null, null]],
-          ["0.normal.T40GREEN", ["0", "normal", "T40GREEN"]],
-          ["0.reverse.T45BLUE", ["0", "reverse", "T45BLUE"]],
-          ["0.normal.T90GREY", ["0", "normal", "T90GREY"]],
-          ["0.debossing.TEMBVIOLET", ["0", "debossing", "TEMBVIOLET"]],
-          ["0.decor.TPENGOLD", ["0", "decor", "TPENGOLD"]],
-          ["0.normal.", ["0", "normal", "T40GREEN"]],
-          ["0.reverse.", ["0", "reverse", "T40GREEN"]],
-          ["0.vgroove.", ["0", "vgroove", "T40GREEN"]],
-          ["0.decor.", ["0", "decor", "TPENGOLD"]],
-          ["0.debossing.", ["0", "debossing", "TEMBVIOLET"]],
-        ];
-        samples.forEach(([s, expected]) => {
-          t.equal(layer.parse(s), expected, s);
-        });
-      });
+      t.equal(layer.parse("NOCUT"), ["NOCUT"], "NOCUT");
+      t.equal(layer.parse("NOCUT.cut"), ["NOCUT"], "NOCUT with something else");
+      t.equal(
+        layer.parse("0.normal.T40GREEN"),
+        ["0", "normal", "T40GREEN"],
+        "valid parse"
+      );
+      t.equal(layer.parse("0.decor.T40GREEN"), null, "valid parse");
     });
-
-    // t.test("modify", (t) => {
-    //   t.test("valid args", (t) => {
-    //     [
-    //       [{ sheet: layer.NOCUT }, "NOCUT.."],
-    //       [{ sheet: 1 }, "1.normal.T40GREEN"],
-    //       [{ utensile: "T45BLUE" }, "0.normal.T45BLUE"],
-    //       [{ utensile: "T90GREY" }, "0.normal.T90GREY"],
-    //       [{ cut: "decor" }, "0.decor.TPENGOLD"],
-    //       [{ cut: "debossing" }, "0.decor.TEMBVIOLET"],
-    //     ].forEach(([opt, s]) => {
-    //       // @ts-ignore
-    //       t.equal(layer.modify("0.normal.T40GREEN", opt), s);
-    //     });
-    //   });
-
-    //   t.test("invalid args", (t) => {
-    //     [
-    //       { sheet: layer.NOCUT, cut: "normal" },
-    //       { sheet: layer.NOCUT, utensile: "T40GREEN" },
-    //     ].map((v) => {
-    //       // @ts-ignore
-    //       t.equal(layer.modify("0.normal.T40GREEN", v), null);
-    //     });
-    //   });
-    // });
+    t.test("modify", (t) => {
+      t.equal(layer.modify("NOCUT", { sheet: 0 }), null, "invalid modify");
+      t.equal(
+        layer.modify("NOCUT", {
+          sheet: 0,
+          cut: "normal",
+          utensile: "T40GREEN",
+        }),
+        "0.normal.T40GREEN",
+        "valid modify"
+      );
+      t.equal(
+        layer.modify("0.decor.TPENGOLD", {
+          cut: "normal",
+          utensile: "T40GREEN",
+        }),
+        "0.normal.T40GREEN",
+        "valid modify"
+      );
+      t.equal(
+        layer.modify("0.normal.TPENGOLD", {
+          cut: "normal",
+          utensile: "T40GREEN",
+        }),
+        null,
+        "invalid original layer"
+      );
+      t.equal(
+        layer.modify("0.decor.TPENGOLD", {
+          cut: "decor",
+          utensile: "T40GREEN",
+        }),
+        null,
+        "invalid modify"
+      );
+    });
   });
-  // t.test("toVds", async (t) => {
-  //   // t.test('empty',t=>{
-  //   //   const vds =
-  //   // })
-  //   const vds = toVds(new makerjs.models.Rectangle(10, 10));
-  //   const [m, width, height] = vds.match(
-  //     /<width>\s*(\d*)<\/width>\s*<Height>\s*(\d*)<\/Height>/
-  //   );
-  //   t.equal(width, "10", "width");
-  //   t.equal(height, "10", "height");
-  //   const regex = /<(PassElement)-(\d)->([^]*)<\/\1-\2->\s*<(Template)-\2->([^]*)<\/\4-\2->\s*<(Apertura)-\2-0>([^]*)<\/\6-\2-0>/g;
-  //   const matches = vds.matchAll(regex);
-  //   // for (const [m,_1,N,passElement,_4,template,_6,apertura] of matches) {
-  //   //   tem
-  //   //   t.test()
-  //   // }
-  // });
 });

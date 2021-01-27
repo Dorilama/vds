@@ -116,79 +116,46 @@ const valid = {
   debossing: ["TEMBVIOLET"],
 };
 
+/**
+ * @namespace
+ */
 export const layer = {
-  sep: ".",
-  NOCUT: "NOCUT",
   /**
    * Given sheet ID, cut type and utensile type
    * return a string representing the layer label
-   * @param {string|number} sheet the sheet ID
-   * @param {Cut} [cut] the cut type
-   * @param {Utensile} [utensile] the utensile type
-   * @returns {string} the layer label
+   * @typedef {(sheet: 'NOCUT', cut?: *, utensile?: *)=>string} CreateNocut
+   * @typedef {(sheet: string|number, cut: Cut, utensile: Utensile)=>string} Create
+   * @type {Create & CreateNocut}
    */
   create(sheet, cut, utensile) {
-    if (sheet === this.NOCUT) {
-      return this.NOCUT + this.sep.repeat(2);
-    }
-    const validated = this.validate(cut, utensile);
+    const validated = this.validate(sheet, cut, utensile);
     if (!validated) {
       return null;
     }
-    const [c, u] = validated;
-    return sheet + this.sep + c + this.sep + u;
+    return validated.join(".");
   },
   /**
-   *
+   * Vlidate layer label arguments
+   * @param {string|number} sheet
    * @param {string} cut
    * @param {string} utensile
-   * @returns {[Cut,Utensile]}
+   * @returns {['NOCUT'] | [string, Cut, Utensile]}
    */
-  // validate(cut, utensile) {
-  //   let c, u;
-  //   if (!cut) {
-  //     c = cutList[0];
-  //   } else {
-  //     c = cutList.find((v) => v === cut);
-  //     if (!c) {
-  //       return null;
-  //     }
-  //   }
-
-  //   if (!utensile) {
-  //     u = valid[c][0];
-  //   } else {
-  //     u = utensileList.find((v) => v === utensile);
-  //     if (!u) {
-  //       return null;
-  //     }
-  //   }
-  //   if (!valid[c].includes(u)) {
-  //     return null;
-  //   }
-  //   return [c, u];
-  // },
-  validate(cut, utensile) {
-    if (!cut) {
-      if (utensile) {
-        let v = Object.entries(valid).find(([k, v]) =>
-          v.find((s) => s === utensile)
-        );
-        if (v) {
-          cut = v[0];
-        } else {
-          cut = cutList[0];
-        }
-      } else {
-        cut = cutList[0];
-      }
+  validate(sheet, cut, utensile) {
+    if (sheet === "NOCUT") {
+      return ["NOCUT"];
+    }
+    if ((!sheet && sheet !== 0) || !cut || !utensile) {
+      console.log(sheet, cut, utensile);
+      return null;
+    }
+    sheet = sheet.toString();
+    if (sheet.includes(".")) {
+      return null;
     }
     const c = cutList.find((v) => v === cut);
     if (!c) {
       return null;
-    }
-    if (!utensile) {
-      utensile = valid[c][0];
     }
     const u = utensileList.find((v) => v === utensile);
     if (!u) {
@@ -197,41 +164,32 @@ export const layer = {
     if (!valid[c].includes(u)) {
       return null;
     }
-    return [c, u];
+    return [sheet, c, u];
   },
   /**
    * Given a layer label string
    * return the parsed sheet ID, cut type and utensile type
    * @param {string} str
-   * @returns {[string, Cut, Utensile]}
+   * @returns {['NOCUT'] | [string, Cut, Utensile]}
    */
   parse(str) {
-    const split = str.split(this.sep);
-    if (split.length !== 3) {
-      return null;
-    }
-    const [sheet, cut, utensile] = split;
-    if (sheet === this.NOCUT) {
-      return [sheet, null, null];
-    }
-    const validated = this.validate(cut, utensile);
-    if (!validated) {
-      return null;
-    }
-    return [sheet, ...validated];
+    const [sheet, cut, utensile] = str.split(".");
+    return this.validate(sheet, cut, utensile);
   },
   /**
    *
    * @param {string} str
-   * @param {{sheet?: number|string, cut?: Cut, utensile?: Utensile}} param1
+   * @param {{sheet?: number|string, cut?: Cut, utensile?: Utensile}} opt
    */
   modify(str, { sheet, cut, utensile }) {
-    if (sheet === this.NOCUT) {
-      if (cut || utensile) {
-        return null;
-      }
-      return this.NOCUT + this.sep.repeat(2);
+    const parsed = this.parse(str);
+    if (!parsed) {
+      return null;
     }
-    return "null";
+    if (sheet === 0) {
+      sheet = "0";
+    }
+    const [s, c, u] = parsed;
+    return this.create(sheet || s, cut || c, utensile || u);
   },
 };
