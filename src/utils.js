@@ -91,7 +91,7 @@ export const straighten = (model, facetSize = 1) => {
 };
 
 /** @type {["T40GREEN", "T45BLUE", "T90GREY", "TPENGOLD", "TEMBVIOLET"]} */
-const utensileList = [
+export const utensileList = [
   "T40GREEN",
   "T45BLUE",
   "T90GREY",
@@ -99,7 +99,8 @@ const utensileList = [
   "TEMBVIOLET",
 ];
 /** @type {["normal", "reverse", "vgroove", "decor", "debossing"]} */
-const cutList = ["normal", "reverse", "vgroove", "decor", "debossing"];
+export const cutList = ["normal", "reverse", "vgroove", "decor", "debossing"];
+const cutMap = { normal: 0, reverse: 1, vgroove: 2, decor: 3, debossing: 5 };
 
 /**
  * @typedef {typeof utensileList[number]} Utensile
@@ -108,7 +109,7 @@ const cutList = ["normal", "reverse", "vgroove", "decor", "debossing"];
 /**
  * @type {Object<string,Utensile[]>}
  */
-const valid = {
+export const valid = {
   normal: ["T40GREEN", "T45BLUE", "T90GREY"],
   reverse: ["T40GREEN", "T45BLUE", "T90GREY"],
   vgroove: ["T40GREEN"],
@@ -116,9 +117,6 @@ const valid = {
   debossing: ["TEMBVIOLET"],
 };
 
-/**
- * @namespace
- */
 export const layer = {
   /**
    * Given sheet ID, cut type and utensile type
@@ -193,3 +191,113 @@ export const layer = {
     return this.create(sheet || s, cut || c, utensile || u);
   },
 };
+
+/**
+ * Given a makerjs IModel
+ * generate a valid VDS file
+ * @param {IModel} model
+ */
+export const toVDS = (model) => {
+  const straightened = straighten(model);
+  const measure = makerjs.measure.modelExtents(straightened);
+  if (!measure) {
+    return null;
+  }
+  const { width, height } = measure;
+  const pathData = makerjs.exporter.toSVGPathData(model, { byLayers: true });
+  const sheets = Object.entries(pathData).reduce((p, [key, data]) => {
+    if (key === "NOCUT") {
+      return p;
+    }
+    const label = layer.parse(key);
+    if (!label) {
+      return p;
+    }
+    data = data.replace(/z/gi, "");
+    const [sheet, cut, utensile] = label;
+    if (!p[sheet]) {
+      p[sheet] = [];
+    }
+    p[sheet].push([data, cut, utensile, width, height]);
+    return p;
+  }, {});
+  const files = Object.entries(sheets).reduce((f, [key, data]) => {
+    f[key] = vds(width, height, data);
+    return f;
+  }, {});
+  return files;
+};
+
+/**
+ *
+ * @param {number} width
+ * @param {number} height
+ * @param {[string, Cut, Utensile, number, number][]} paths
+ */
+function vds(width, height, paths) {
+  return `<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <Passepartout>
+    <width> ${Math.ceil(width)}</width>
+    <Height> ${Math.ceil(height)}</Height>
+    <Notes />
+    <Path></Path>
+    <UM>mm</UM>
+    <IsBox>False</IsBox>
+  </Passepartout>
+${paths
+  .map(([d, cut, utensile], N) => path(d, cut, utensile, N, width, height))
+  .join("\n")}
+</NewDataSet>`;
+}
+
+/**
+ *
+ * @param {string} d
+ * @param {Cut} cut
+ * @param {Utensile} utensile
+ * @param {number} N
+ * @param {number} width
+ * @param {number} height
+ */
+function path(d, cut, utensile, N, width, height) {
+  return `  <PassElement-${N}->
+    <PelId>${N}</PelId>
+    <OriginalTopSize>&lt;Size xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;100000000,100000000&lt;/Size&gt;</OriginalTopSize>
+    <OriginalBottomSize>&lt;Size xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;100000000,100000000&lt;/Size&gt;</OriginalBottomSize>
+    <OriginalPosition>&lt;Point xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0&lt;/Point&gt;</OriginalPosition>
+    <TemplateCode>S${(N + 1).toString().padStart(3, "0")}</TemplateCode>
+    <Position>&lt;Point xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0&lt;/Point&gt;</Position>
+    <Acceleration>0</Acceleration>
+    <Speed>0</Speed>
+    <LiftBlade>False</LiftBlade>
+    <MyType />
+    <TopBoundsReal>&lt;Rect xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0,${width},${height}&lt;/Rect&gt;</TopBoundsReal>
+    <BottomBoundsReal>&lt;Rect xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0,${width},${height}&lt;/Rect&gt;</BottomBoundsReal>
+    <Groups />
+    <VMirrored>False</VMirrored>
+    <OMirrored>False</OMirrored>
+    <NumeroAperture>1</NumeroAperture>
+    <RotationAngle> 0</RotationAngle>
+    <CutIndex>0</CutIndex>
+    <InfoLabel></InfoLabel>
+  </PassElement-${N}->
+  <Template-${N}->
+    <PelID>${N}</PelID>
+    <width> ${width}</width>
+    <height> ${height}</height>
+    <Position>&lt;Point xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0&lt;/Point&gt;</Position>
+    <Distances />
+    <NumeroPathGeto>1</NumeroPathGeto>
+    <largeVG>False</largeVG>
+  </Template-${N}->
+  <Apertura-${N}-0>
+    <PelID>${N}</PelID>
+    <GeoDraw>&lt;GeometryDrawing Brush="#FFA9A9A9" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;&lt;GeometryDrawing.Pen&gt;&lt;Pen Brush="#FFFFFFFF" Thickness="1.3" LineJoin="Bevel" /&gt;&lt;/GeometryDrawing.Pen&gt;&lt;GeometryDrawing.Geometry&gt;&lt;PathGeometry Figures="${d}" /&gt;&lt;/GeometryDrawing.Geometry&gt;&lt;/GeometryDrawing&gt;</GeoDraw>
+    <GeoDrawVideo>&lt;GeometryDrawing Brush="#FFA9A9A9" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;&lt;GeometryDrawing.Pen&gt;&lt;Pen Brush="#FFFFFFFF" Thickness="1.3" LineJoin="Bevel" /&gt;&lt;/GeometryDrawing.Pen&gt;&lt;GeometryDrawing.Geometry&gt;&lt;PathGeometry Figures="" /&gt;&lt;/GeometryDrawing.Geometry&gt;&lt;/GeometryDrawing&gt;</GeoDrawVideo>
+    <Layer>1</Layer>
+    <CutType>${cutMap[cut]}</CutType>
+    <UtensileCode>${utensile}</UtensileCode>
+    <Number>1</Number>
+  </Apertura-${N}-0>`;
+}

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "c8 node ./test/index.js",
     "dev": "snowpack dev",
-    "dev:node": "node ./dev.js"
+    "dev:node": "node ./dev.js",
+    "dev:node-only": "RUN_ONLY=true node ./dev.js"
   },
   "keywords": [],
   "author": "dorilama",

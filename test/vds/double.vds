@@ -1,0 +1,50 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <Passepartout>
+    <width> 200</width>
+    <Height> 200</Height>
+    <Notes />
+    <Path></Path>
+    <UM>mm</UM>
+    <IsBox>False</IsBox>
+  </Passepartout>
+  <PassElement-0->
+    <PelId>0</PelId>
+    <OriginalTopSize>&lt;Size xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;100000000,100000000&lt;/Size&gt;</OriginalTopSize>
+    <OriginalBottomSize>&lt;Size xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;100000000,100000000&lt;/Size&gt;</OriginalBottomSize>
+    <OriginalPosition>&lt;Point xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0&lt;/Point&gt;</OriginalPosition>
+    <TemplateCode>S001</TemplateCode>
+    <Position>&lt;Point xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0&lt;/Point&gt;</Position>
+    <Acceleration>0</Acceleration>
+    <Speed>0</Speed>
+    <LiftBlade>False</LiftBlade>
+    <MyType />
+    <TopBoundsReal>&lt;Rect xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0,200,200&lt;/Rect&gt;</TopBoundsReal>
+    <BottomBoundsReal>&lt;Rect xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0,200,200&lt;/Rect&gt;</BottomBoundsReal>
+    <Groups />
+    <VMirrored>False</VMirrored>
+    <OMirrored>False</OMirrored>
+    <NumeroAperture>1</NumeroAperture>
+    <RotationAngle> 0</RotationAngle>
+    <CutIndex>0</CutIndex>
+    <InfoLabel></InfoLabel>
+  </PassElement-0->
+  <Template-0->
+    <PelID>0</PelID>
+    <width> 200</width>
+    <height> 200</height>
+    <Position>&lt;Point xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;0,0&lt;/Point&gt;</Position>
+    <Distances />
+    <NumeroPathGeto>1</NumeroPathGeto>
+    <largeVG>False</largeVG>
+  </Template-0->
+  <Apertura-0-0>
+    <PelID>0</PelID>
+    <GeoDraw>&lt;GeometryDrawing Brush="#FFA9A9A9" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;&lt;GeometryDrawing.Pen&gt;&lt;Pen Brush="#FFFFFFFF" Thickness="1.3" LineJoin="Bevel" /&gt;&lt;/GeometryDrawing.Pen&gt;&lt;GeometryDrawing.Geometry&gt;&lt;PathGeometry Figures="M 45 155 L 155 155 L 155 45 L 45 45 L 45 155  M 50 150 L 150 150 L 150 50 L 50 50 L 50 150 " /&gt;&lt;/GeometryDrawing.Geometry&gt;&lt;/GeometryDrawing&gt;</GeoDraw>
+    <GeoDrawVideo>&lt;GeometryDrawing Brush="#FFA9A9A9" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;&lt;GeometryDrawing.Pen&gt;&lt;Pen Brush="#FFFFFFFF" Thickness="1.3" LineJoin="Bevel" /&gt;&lt;/GeometryDrawing.Pen&gt;&lt;GeometryDrawing.Geometry&gt;&lt;PathGeometry Figures="" /&gt;&lt;/GeometryDrawing.Geometry&gt;&lt;/GeometryDrawing&gt;</GeoDrawVideo>
+    <Layer>1</Layer>
+    <CutType>0</CutType>
+    <UtensileCode>T40GREEN</UtensileCode>
+    <Number>1</Number>
+  </Apertura-0-0>
+</NewDataSet>
