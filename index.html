@@ -7,6 +7,25 @@
   </head>
   <body>
     <h1>Cornicissima Passepartout</h1>
+    <p>
+      Convert a SVG file in a VDS file ready to use with VStudio for Valiani
+      digital flatbed plotters.
+    </p>
+    <p>
+      Currently it applies transformations, flatten curves into straight lines
+      and create the final VDS file.
+    </p>
+    <p>
+      It's a work in progress. Eventually it will allow to choose cut and
+      utensile type for every path.
+    </p>
+    <p>Drop a svg file or click below.</p>
+    <div id="app">
+      <label class="dropimage">
+        <input title="Drop image or click me" type="file" />
+      </label>
+    </div>
+
     <script src="./src/index.js" type="module"></script>
   </body>
 </html>

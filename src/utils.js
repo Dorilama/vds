@@ -50,7 +50,6 @@ export const toModel = async (svgString) => {
   }
   const { attributes, children } = await parse(svgString);
   const pathData = toPathData(children);
-  console.log(pathData.length);
   if (pathData.length === 0) {
     return null;
   }
@@ -144,7 +143,6 @@ export const layer = {
       return ["NOCUT"];
     }
     if ((!sheet && sheet !== 0) || !cut || !utensile) {
-      console.log(sheet, cut, utensile);
       return null;
     }
     sheet = sheet.toString();
