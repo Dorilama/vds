@@ -3,9 +3,8 @@ import { test, only } from "zora";
 import { toModel, straighten, layer, toVDS } from "../src/utils.js";
 import makerjs from "makerjs";
 import { readFile } from "fs/promises";
-import diff from "fast-diff";
 
-const empty = [`<svg></svg>`, ""];
+const empty = `<svg></svg>`;
 
 const base = [
   `<svg>
@@ -48,16 +47,20 @@ const nestedTransform = [
   "M 10 20 L 10 10 L 0 10 L 0 0",
 ];
 
+const notFromZero = [
+  `<svg>
+    <path d="M 0 0 L 0 10 10 10" transform="translate(100, 10)"></path>
+  </svg>`,
+  "M 10 10 L 0 10 L 0 0",
+];
+
 const curve = `<svg>
   <path d="M 10 10 C 20 20, 40 20, 50 10"></path>
 </svg>`;
 
 test("toModel", async (t) => {
-  t.equal(
-    makerjs.exporter.toSVGPathData(await toModel(empty[0])),
-    empty[1],
-    "empty"
-  );
+  t.equal(await toModel(""), null, "empty string");
+  t.equal(await toModel(empty), null, "empty svg");
   t.equal(
     makerjs.exporter.toSVGPathData(await toModel(base[0])),
     base[1],
@@ -82,6 +85,11 @@ test("toModel", async (t) => {
     makerjs.exporter.toSVGPathData(await toModel(element[0])),
     element[1],
     "element"
+  );
+  t.equal(
+    makerjs.exporter.toSVGPathData(await toModel(notFromZero[0])),
+    notFromZero[1],
+    "not from zero"
   );
 });
 

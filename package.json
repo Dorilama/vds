@@ -20,6 +20,7 @@
   "dependencies": {
     "element-to-path": "^1.2.0",
     "makerjs": "^0.17.0",
+    "picnic": "^6.5.4",
     "svgpath": "^2.3.0",
     "svgson": "^4.1.0",
     "uland": "^0.6.1"

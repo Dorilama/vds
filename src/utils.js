@@ -45,22 +45,23 @@ export const toPathData = (children, transform = "") => {
  * @returns {Promise<IModel>}
  */
 export const toModel = async (svgString) => {
+  if (!svgString) {
+    return null;
+  }
   const { attributes, children } = await parse(svgString);
   const pathData = toPathData(children);
-  // start from an empty model  that can be converted in svg without errors
-  const model = {
-    paths: {
-      _: { type: "line", origin: [0, 0], end: [0, 0] },
-    },
-  };
-  pathData.forEach((d, N) => {
+  console.log(pathData.length);
+  if (pathData.length === 0) {
+    return null;
+  }
+  return pathData.reduce((model, d, N) => {
     makerjs.model.addModel(
       model,
       makerjs.importer.fromSVGPathData(d),
       "m_" + (N + 1)
     );
-  });
-  return model;
+    return model;
+  }, {});
 };
 
 /**
@@ -73,7 +74,6 @@ export const toModel = async (svgString) => {
  */
 export const straighten = (model, facetSize = 1) => {
   let newModel = makerjs.model.clone(model);
-  // console.log(newModel);
   makerjs.model.walk(newModel, {
     onPath({ pathContext, pathId, modelContext }) {
       if (pathContext.type !== "line") {
