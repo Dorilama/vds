@@ -18,5 +18,19 @@ module.exports = {
   buildOptions: {
     /* ... */
   },
-  exclude: ["**/node_modules/**/*", "**/test/**/*", "dev.js"],
+  exclude: [
+    "**/node_modules/**/*",
+    "**/test/**/*",
+    "dev.js",
+    "mytmp/**/*",
+    "coverage/**/*",
+    ".gitignore",
+    "index.d.ts",
+    "jsconfig.json",
+    "LICENSE",
+    "package-lock.json",
+    "package.json",
+    "README.md",
+    "snowpack.config.cjs",
+  ],
 };

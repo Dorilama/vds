@@ -1,7 +1,6 @@
 import { render, html, Component, useState } from "uland";
 import makerjs from "makerjs";
 import { layer, toModel, toVDS } from "./utils.js";
-import "picnic/releases/picnic.min.css";
 
 const preview = Component(() => {
   const [model, setModel] = useState(null);
