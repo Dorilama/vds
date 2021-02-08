@@ -1,7 +1,7 @@
 {
-  "name": "cornicissima",
+  "name": "svg-tovds",
   "version": "0.1.0",
-  "description": "",
+  "description": "Convert a SVG file in a VDS file ready to use with VStudio for Valiani digital flatbed plotters.",
   "main": "index.js",
   "scripts": {
     "test": "c8 node ./test/index.js",
