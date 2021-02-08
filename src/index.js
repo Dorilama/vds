@@ -42,14 +42,17 @@ const preview = Component(() => {
         }}
       />
     </label>
-    ${model
-      ? html`<a
-          href=${`data:text/plain;charset=utf-8,"${toVDS(model)["green"]}"`}
-          class="pseudo button success"
-          download=${name.replace(/\.svg$/, ".vds")}
-          >Download VDS</a
-        >`
-      : null}
+    <a
+      href=${model
+        ? `data:text/plain;charset=utf-8,${encodeURIComponent(
+            toVDS(model)["green"]
+          )}`
+        : null}
+      class="pseudo button success"
+      download=${name ? name.replace(/\.svg$/, ".vds") : null}
+      disabled=${model ? null : ""}
+      >Download VDS</a
+    >
   `;
 });
 
